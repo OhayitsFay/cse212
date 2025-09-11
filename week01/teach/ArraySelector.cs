@@ -9,8 +9,24 @@ public static class ArraySelector
         Console.WriteLine("<int[]>{" + string.Join(", ", intResult) + "}"); // <int[]>{1, 2, 3, 2, 4, 4, 6, 8, 10, 5}
     }
 
-    private static int[] ListSelector(int[] list1, int[] list2, int[] select)
+    private static T[] ListSelector<T>(T[] list1, T[] list2, int[] select)
     {
-        return [];
+        var result = new T[select.Length];
+        int l1Idx = 0;
+        int l2Idx = 0;
+
+        for (int i = 0; i < select.Length; i++)
+        {
+            if (select[i] == 1)
+            {
+                result[i] = list1[l1Idx++];
+            }
+            else
+            {
+                result[i] = list2[l2Idx++];
+            }
+        }
+
+        return result;
     }
 }
