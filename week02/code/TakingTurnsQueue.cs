@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 /// <summary>
 /// This queue is circular.  When people are added via AddPerson, then they are added to the 
 /// back of the queue (per FIFO rules).  When GetNextPerson is called, the next person
@@ -9,15 +12,15 @@
 /// </summary>
 public class TakingTurnsQueue
 {
-    private readonly PersonQueue _people = new();
+    // Use the built-in Queue<T> to avoid subtle bugs in custom queue code.
+    private readonly Queue<Person> _people = new Queue<Person>();
 
-    public int Length => _people.Length;
+    // Length property used by tests
+    public int Length => _people.Count;
 
     /// <summary>
     /// Add new people to the queue with a name and number of turns
     /// </summary>
-    /// <param name="name">Name of the person</param>
-    /// <param name="turns">Number of turns remaining</param>
     public void AddPerson(string name, int turns)
     {
         var person = new Person(name, turns);
@@ -33,25 +36,30 @@ public class TakingTurnsQueue
     /// </summary>
     public Person GetNextPerson()
     {
-        if (_people.IsEmpty())
-        {
+        if (_people.Count == 0)
             throw new InvalidOperationException("No one in the queue.");
-        }
-        else
-        {
-            Person person = _people.Dequeue();
-            if (person.Turns > 1)
-            {
-                person.Turns -= 1;
-                _people.Enqueue(person);
-            }
 
-            return person;
+        // Dequeue the person who is next
+        var person = _people.Dequeue();
+
+        // Infinite turns (0 or negative) -> re-enqueue unchanged
+        if (person.Turns <= 0)
+        {
+            _people.Enqueue(person);
         }
+        // More than 1 turn left -> decrement and re-enqueue
+        else if (person.Turns > 1)
+        {
+            person.Turns -= 1;
+            _people.Enqueue(person);
+        }
+        // else person.Turns == 1 -> this was their last turn, do NOT re-enqueue
+
+        return person;
     }
 
     public override string ToString()
     {
-        return _people.ToString();
+        return $"[{string.Join(", ", _people)}]";
     }
 }
